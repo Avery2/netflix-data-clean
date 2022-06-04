@@ -1,0 +1,159 @@
+---
+title: "exploration"
+author: "Avery Chan"
+date: "5/11/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+library(scales)
+```
+
+```{r}
+# read in data
+view_activity_data_orig <- read_csv("./netflix-report/CONTENT_INTERACTION/ViewingActivity.csv", col_types = cols())
+```
+
+```{r}
+# view data
+view_activity_data_orig %>% str()
+view_activity_data_orig %>%
+  select(-c(`Start Time`, Duration, Bookmark, `Latest Bookmark`)) %>% 
+  summarise_all(n_distinct)
+
+# I hate that I have to do this manually because I cannot loop
+# view_activity_data_orig %>%
+#   select(`Profile Name`) %>% 
+#   unique()
+# view_activity_data_orig %>%
+#   select(-c(`Start Time`, Duration, Bookmark, `Latest Bookmark`)) %>% 
+#   sapply(function(x) {
+#     # unique(x) %>% n_distinct()
+#     unique(x) %>% typeof()
+#     # l <- unique(x)
+#     # data.frame(matrix(unlist(l), nrow=length(l), byrow=TRUE))
+#   })
+
+# auto but no names
+view_activity_data_orig %>%
+  select(-c(`Start Time`, Duration, Bookmark, `Latest Bookmark`)) %>% 
+  lapply(function (x) {
+    unique(x) %>% tibble()
+  })
+```
+
+
+```{r}
+view_activity_data_orig$`Start Time` %>% plot()
+view_activity_data_orig$Duration %>% plot()
+
+view_activity_data_orig$`Start Time` %>% str()
+view_activity_data_orig %>% glimpse()
+```
+
+
+```{r}
+theme_set(theme_bw())
+# date
+view_activity_data_orig %>% 
+  mutate(
+    year = year(`Start Time`),
+    month = month(`Start Time`, label = TRUE),
+    week = floor_date(`Start Time`, unit = "week")
+  ) %>% group_by(year, month, week) %>% 
+  summarise(
+    n = n()
+  ) %>% ggplot(aes(year, n)) +
+  geom_col() +
+  ggtitle("Year")
+
+view_activity_data_orig %>% 
+  mutate(
+    year = year(`Start Time`),
+    month = month(`Start Time`, label = TRUE),
+    week = floor_date(`Start Time`, unit = "week")
+  ) %>% group_by(year, month, week) %>% 
+  summarise(
+    n = n()
+  ) %>% ggplot(aes(month, n)) +
+  geom_col() +
+  ggtitle("Month")
+
+view_activity_data_orig %>% 
+  mutate(
+    year = year(`Start Time`),
+    month = month(`Start Time`, label = TRUE),
+    week = floor_date(`Start Time`, unit = "week")
+  ) %>% group_by(year, month, week) %>% 
+  summarise(
+    n = n()
+  ) %>% ggplot(aes(week, n)) +
+  geom_col() +
+  ggtitle("Week")
+```
+```{r}
+view_activity_data_orig %>% 
+  mutate(
+    year = year(`Start Time`),
+    month = month(`Start Time`, label = TRUE),
+    week = floor_date(`Start Time`, unit = "week")
+  ) %>% group_by(year, month, week) %>% 
+  summarise(
+    number_of_sessions = n()
+  ) %>% ggplot(aes(year, number_of_sessions, fill=month)) +
+  geom_col()
+```
+
+```{r}
+view_activity_data_orig %>% glimpse()
+```
+
+```{r}
+view_activity_data_orig %>% 
+  mutate(
+    year = year(`Start Time`),
+    month = month(`Start Time`, label = TRUE),
+    week = floor_date(`Start Time`, unit = "week")
+  ) %>% group_by(year, month, week) %>% 
+  summarise(
+    number_of_sessions = n(),
+    `Device Type`
+  ) %>% ggplot(aes(year, number_of_sessions, fill=`Device Type`)) +
+  geom_col()
+
+view_activity_data_orig %>% 
+  mutate(
+    year = year(`Start Time`),
+    month = month(`Start Time`, label = TRUE),
+    week = floor_date(`Start Time`, unit = "week")
+  ) %>% group_by(year, month, week) %>% 
+  summarise(
+    number_of_sessions = n(),
+    `Device Type`
+  ) %>% ungroup() %>% group_by(`Device Type`) %>% 
+  filter(
+    # n() > 100
+    n() > 100
+  ) %>% ggplot(aes(year, number_of_sessions, fill=`Device Type`)) +
+  geom_col() + theme(legend.position="bottom")+guides(colour=guide_legend(nrow=3)) +
+  scale_y_continuous(labels = scientific) + theme(legend.text = element_text(size = 4))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
